@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>주식 현황 대시보드</title>
+<meta name="viewport" content="width=1640" />
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="assets/colors_and_type.css" />
+<link rel="stylesheet" href="assets/components.css" />
+<link rel="stylesheet" href="assets/app.css" />
+<link rel="stylesheet" href="assets/stock.css" />
+<script>
+  /*EDITMODE-BEGIN*/
+  window.TWEAKS = {
+    "theme": "dark",
+    "density": "comfortable",
+    "showSidebar": true,
+    "focusLayout": "a"
+  };
+  /*EDITMODE-END*/
+</script>
+<style>
+  body { margin: 0; background: #f0eee9; }
+  .ab-frame {
+    background: var(--bg-app);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="assets/stock-data.js"></script>
+<script type="text/babel" src="assets/icons.jsx"></script>
+<script type="text/babel" src="assets/design-canvas.jsx"></script>
+<script type="text/babel" src="assets/stock-components.jsx"></script>
+<script type="text/babel" src="assets/stock-v1.jsx"></script>
+<script type="text/babel" src="assets/stock-v2.jsx"></script>
+<script type="text/babel" src="assets/stock-v3.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+function App() {
+  const [theme, setTheme] = useState(window.TWEAKS.theme);
+  const [density, setDensity] = useState(window.TWEAKS.density);
+  const [showSidebar, setShowSidebar] = useState(window.TWEAKS.showSidebar);
+  const [focusLayout, setFocusLayout] = useState(window.TWEAKS.focusLayout);
+  const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    const onMsg = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setEditMode(true);
+      if (e.data?.type === '__deactivate_edit_mode') setEditMode(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const persist = (p) => window.parent.postMessage({ type: '__edit_mode_set_keys', edits: p }, '*');
+
+  const layouts = [
+    { id: 'a', label: 'A · 3-Column Terminal', sub: '워치리스트 + 차트·히트맵 + 뉴스 (밀도 최대)', Comp: window.LayoutA },
+    { id: 'b', label: 'B · Chart Hero', sub: '선택 종목 차트 중심 + 탭 전환 테이블 + 관련 뉴스', Comp: window.LayoutB },
+    { id: 'c', label: 'C · News Briefing', sub: '핫이슈 요약 우선 + 보조 차트/워치리스트', Comp: window.LayoutC },
+  ];
+
+  const visible = focusLayout === 'all' ? layouts : layouts.filter(l => l.id === focusLayout);
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="stock" title="주식 현황 대시보드" subtitle="3개 레이아웃 시안 · 실시간 시장 데이터는 샘플입니다">
+          {visible.map(({ id, label, sub, Comp }) => (
+            <DCArtboard key={id} id={id} label={label} subtitle={sub} width={1560} height={1080}>
+              <div className="ab-frame" style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+                <Comp density={density} showSidebar={showSidebar} />
+              </div>
+            </DCArtboard>
+          ))}
+        </DCSection>
+      </DesignCanvas>
+
+      {editMode && (
+        <div className="tweaks-panel">
+          <div className="t-title">Tweaks</div>
+          <div className="t-group">
+            <div className="t-label">Theme</div>
+            <div className="t-row">
+              <button className={'t-pill ' + (theme === 'light' ? 'is-active' : '')} onClick={() => { setTheme('light'); persist({ theme: 'light' }); }}>Light</button>
+              <button className={'t-pill ' + (theme === 'dark' ? 'is-active' : '')} onClick={() => { setTheme('dark'); persist({ theme: 'dark' }); }}>Dark</button>
+            </div>
+          </div>
+          <div className="t-group">
+            <div className="t-label">밀도</div>
+            <div className="t-row">
+              <button className={'t-pill ' + (density === 'comfortable' ? 'is-active' : '')} onClick={() => { setDensity('comfortable'); persist({ density: 'comfortable' }); }}>편안</button>
+              <button className={'t-pill ' + (density === 'compact' ? 'is-active' : '')} onClick={() => { setDensity('compact'); persist({ density: 'compact' }); }}>컴팩트</button>
+            </div>
+          </div>
+          <div className="t-group">
+            <div className="t-label">사이드바</div>
+            <div className="t-row">
+              <button className={'t-pill ' + (showSidebar ? 'is-active' : '')} onClick={() => { setShowSidebar(true); persist({ showSidebar: true }); }}>On</button>
+              <button className={'t-pill ' + (!showSidebar ? 'is-active' : '')} onClick={() => { setShowSidebar(false); persist({ showSidebar: false }); }}>Off</button>
+            </div>
+          </div>
+          <div className="t-group">
+            <div className="t-label">레이아웃 포커스</div>
+            <div className="t-row" style={{ flexWrap: 'wrap' }}>
+              {['all', 'a', 'b', 'c'].map(k => (
+                <button key={k} className={'t-pill ' + (focusLayout === k ? 'is-active' : '')} onClick={() => { setFocusLayout(k); persist({ focusLayout: k }); }}>{k === 'all' ? '전체' : k.toUpperCase()}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button className="floating-theme" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} title="테마 전환">
+        <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={15} />
+      </button>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
