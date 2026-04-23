@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <rect width="48" height="48" rx="10" fill="#0A524E"></rect>
-  <path d="M8 8 H28 A12 12 0 0 1 40 20 V22 H20 A12 12 0 0 0 8 10 Z" fill="#5FDCD3"></path>
-  <path d="M8 19 H32 V29 H8 Z" fill="#2EC6BC"></path>
-  <path d="M8 26 H40 V28 A12 12 0 0 1 28 40 H8 Z M20 38 A12 12 0 0 0 32 30 V28 H20 Z" fill="#15A89F"></path>
-  <circle cx="41.5" cy="24" r="2.5" fill="#EBFBFA"></circle>
-</svg>
